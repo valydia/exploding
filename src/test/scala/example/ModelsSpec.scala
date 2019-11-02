@@ -5,16 +5,7 @@ import org.scalatest.{ FlatSpecLike, MustMatchers }
 
 class ModelsSpec extends FlatSpecLike with MustMatchers with ExplodingGen {
 
-  "Models" should "shuffle deck" in {
-    forAll(Gen.chooseNum(1, 32), Gen.chooseNum(1, 23)) { (i1: Int, i2: Int) =>
-      val res = Turn.shuffle(i1, i2)
-      res.length mustBe i1 + i2
-      res.count(_ == Explosive) mustBe i1
-      res.count(_ == Blank) mustBe i2
-    }
-  }
-
-  it should "draw card for non-empty Turn" in {
+  "Models" should "draw card for non-empty Turn" in {
     forAll(turnGen, playerGen()) { (turn, player) =>
       val Right((newPlayer, newTurn)) = turn.drawCard(player)
       newPlayer.name mustBe player.name

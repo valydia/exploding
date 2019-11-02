@@ -5,9 +5,20 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import cats.syntax.apply._
 
-class Program[F[_]](implicit S: Sync[F], C: Console[F]) {
+class Program[F[_]](implicit S: Sync[F], C: Console[F], R: Random[F]) {
 
   val p1 = Player("Player1", None)
+
+  def shuffle(explosiveNum: Int, blankNum: Int): F[List[Card]] = {
+    val explosive = List.fill(explosiveNum)(Explosive)
+    explosive.foldLeft(S.pure(List.fill[Card](blankNum)(Blank))) {
+      case (acc, elem) =>
+        for {
+          accList <- acc
+          idx     <- R.nexInt(accList.length)
+        } yield accList.patch(idx, List(elem), 0)
+    }
+  }
 
   def pickCard(turn: Turn, player: Player, command: String): Either[String, (Player, Turn)] =
     command match {
@@ -18,11 +29,11 @@ class Program[F[_]](implicit S: Sync[F], C: Console[F]) {
   def process(command: Option[String], turn: Turn, player: Player): F[ExitCode] = S.suspend {
     command.fold(S.pure(ExitCode.Success)) { cmd =>
       pickCard(turn, player, cmd) match {
-        case Left(err) => C.putString(s"Err: $err") *> mainLoop(turn, player)
+        case Left(err) => C.putStrLn(s"Err: $err") *> mainLoop(turn, player)
         case Right((p, t)) if t.gameState(p) == DrawCard =>
-          C.putString(t.display(p)) *> mainLoop(t, p)
+          C.putStrLn(t.display(p)) *> mainLoop(t, p)
         case Right((p, t)) =>
-          C.putString(s"Game finished as ${t.gameState(p)} : \n${t.display(p)}") *> S.pure(
+          C.putStrLn(s"Game finished as ${t.gameState(p)} : \n${t.display(p)}") *> S.pure(
             ExitCode.Success
           )
       }
@@ -31,13 +42,16 @@ class Program[F[_]](implicit S: Sync[F], C: Console[F]) {
 
   def mainLoop(turn: Turn, player: Player): F[ExitCode] = S.suspend {
     for {
-      _        <- C.putString(s"Draw a card")
-      command  <- C.get()
+      _        <- C.putStrLn(s"Draw a card")
+      command  <- C.getStrLn()
       exitCode <- process(Option(command), turn, player)
     } yield exitCode
   }
 
-  def run(): F[ExitCode] =
-    mainLoop(new Turn(), p1)
+  def run(explosiveNum: Int, blankNum: Int): F[ExitCode] =
+    for {
+      initialDrawPile <- shuffle(explosiveNum, blankNum)
+      exitCode        <- mainLoop(new Turn(initialDrawPile), p1)
+    } yield exitCode
 
 }

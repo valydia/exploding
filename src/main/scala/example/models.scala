@@ -1,7 +1,5 @@
 package example
 
-import scala.util.Random
-
 case class Player(name: String, hand: Option[Card])
 
 sealed trait Card
@@ -12,7 +10,7 @@ sealed trait State
 case object DrawCard           extends State
 case class Loser(name: String) extends State
 
-case class Turn(drawPile: List[Card] = Turn.shuffle(1, 16)) {
+case class Turn(drawPile: List[Card]) {
 
   def drawCard(player: Player): Either[String, (Player, Turn)] =
     drawPile match {
@@ -39,18 +37,5 @@ case class Turn(drawPile: List[Card] = Turn.shuffle(1, 16)) {
       Loser(p.name)
     else
       DrawCard
-
-}
-
-object Turn {
-
-  def shuffle(explosiveNum: Int, blankNum: Int): List[Card] = {
-    val explosive = List.fill(explosiveNum)(Explosive)
-    explosive.foldLeft(List.fill[Card](blankNum)(Blank)) {
-      case (acc, elem) =>
-        val randomIndex = Random.nextInt(acc.length)
-        acc.patch(randomIndex, List(elem), 0)
-    }
-  }
 
 }

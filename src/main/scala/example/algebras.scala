@@ -2,7 +2,13 @@ package example
 
 trait Console[F[_]] {
 
-  def putString(output: String): F[Unit]
+  def putStrLn(output: String): F[Unit]
 
-  def get(): F[String]
+  def getStrLn(): F[String]
+}
+
+trait Random[F[_]] {
+
+  def nexInt(upper: Int): F[Int]
+
 }
