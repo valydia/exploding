@@ -8,7 +8,7 @@ class Program[F[_]] {
 
   def mainLoop(turn: Turn, player: Player): F[ExitCode] = ???
 
-  def run(args: List[String]): F[ExitCode] =
+  def run(): F[ExitCode] =
     mainLoop(new Turn(), p1)
 
 }

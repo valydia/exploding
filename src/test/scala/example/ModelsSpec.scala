@@ -2,9 +2,8 @@ package example
 
 import org.scalacheck.Gen
 import org.scalatest.{ FlatSpecLike, MustMatchers }
-import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class ModelsSpec extends FlatSpecLike with ScalaCheckDrivenPropertyChecks with MustMatchers {
+class ModelsSpec extends FlatSpecLike with MustMatchers with ExplodingGen {
 
   "Models" should "shuffle deck" in {
     forAll(Gen.chooseNum(1, 32), Gen.chooseNum(1, 23)) { (i1: Int, i2: Int) =>
@@ -14,14 +13,6 @@ class ModelsSpec extends FlatSpecLike with ScalaCheckDrivenPropertyChecks with M
       res.count(_ == Blank) mustBe i2
     }
   }
-
-  val cardGen: Gen[Card] = Gen.frequency((1, Explosive), (9, Blank))
-  val turnGen: Gen[Turn] = Gen.nonEmptyListOf(cardGen).map(Turn.apply)
-  def playerGen(gen: Gen[Option[Card]] = cardGen.map(Option.apply)): Gen[Player] =
-    for {
-      name <- Gen.alphaNumStr
-      hand <- gen
-    } yield Player(name, hand)
 
   it should "draw card for non-empty Turn" in {
     forAll(turnGen, playerGen()) { (turn, player) =>
