@@ -7,6 +7,7 @@ lazy val root =
       name := "exploding",
       libraryDependencies ++= Seq(
         catsEffect,
+        catsMTL    % Test,
         scalaTest  % Test,
         scalaCheck % Test
       )

@@ -12,17 +12,17 @@ class Program[F[_]](implicit S: Sync[F], C: Console[F]) {
   def pickCard(turn: Turn, player: Player, command: String): Either[String, (Player, Turn)] =
     command match {
       case "d" => turn.drawCard(player)
-      case _   => Left("Enter d to pick a card")
+      case _   => Left("Enter 'd' to pick a card")
     }
 
   def process(command: Option[String], turn: Turn, player: Player): F[ExitCode] = S.suspend {
     command.fold(S.pure(ExitCode.Success)) { cmd =>
       pickCard(turn, player, cmd) match {
-        case Left(err) => S.delay(C.putString(s"Err: $err")) *> mainLoop(turn, player)
+        case Left(err) => C.putString(s"Err: $err") *> mainLoop(turn, player)
         case Right((p, t)) if t.gameState(p) == DrawCard =>
-          S.delay(println(t.display(p))) *> mainLoop(t, p)
+          C.putString(t.display(p)) *> mainLoop(t, p)
         case Right((p, t)) =>
-          S.delay(C.putString(s"Game finished as ${t.gameState(p)} : \n${t.display(p)}")) *> S.pure(
+          C.putString(s"Game finished as ${t.gameState(p)} : \n${t.display(p)}") *> S.pure(
             ExitCode.Success
           )
       }
