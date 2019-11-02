@@ -1,8 +1,8 @@
 package example
 
-import cats.effect.{ExitCode, Sync}
+import cats.effect.{ ExitCode }
 
-class Program[F[_]](implicit S: Sync[F]) {
+class Program[F[_]] {
 
   val p1 = Player("Player1", None)
 
