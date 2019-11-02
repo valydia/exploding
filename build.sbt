@@ -38,7 +38,7 @@ lazy val commonSettings =
       "-Ywarn-dead-code",
       "-Ywarn-numeric-widen",
       "-Ywarn-value-discard",
-//      "-Ywarn-unused",
+      "-Ywarn-unused",
       "-Xfatal-warnings",
       "-Xlint",
       "-Ypartial-unification"

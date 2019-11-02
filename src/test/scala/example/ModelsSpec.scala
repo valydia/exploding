@@ -24,28 +24,35 @@ class ModelsSpec extends FlatSpecLike with ScalaCheckDrivenPropertyChecks with M
     } yield Player(name, hand)
 
   it should "draw card for non-empty Turn" in {
-    forAll(turnGen) { turn =>
-      val newTurn = turn.drawCard
-      assert(newTurn.drawPile.nonEmpty)
+    forAll(turnGen, playerGen()) { (turn, player) =>
+      val Right((newPlayer, newTurn)) = turn.drawCard(player)
+      newPlayer.name mustBe player.name
+      newTurn.drawPile.length mustBe turn.drawPile.length - 1
     }
   }
 
   // Corner case empty Turn - shouldn't happen
+  it should "draw card for empty Turn" in {
+    forAll(Gen.const(List.empty[Card]).map(Turn.apply), playerGen()) { (turn, player) =>
+      turn.drawCard(player) must be leftSideValue
+    }
+  }
 
-  // Expect 4 lines
+  // Expect 5 lines
   // Line 1 - Player's Hand:
   // Line 2 - card - Empty / B / E
   // Line 3 - Deck:
   // Line 4 - XXXXXX (1 X per Card)
+  // Line 5 - blank line
   it should "display Turn" in {
     forAll(turnGen, playerGen()) { (turn, player) =>
       val display = turn.display(player)
       val lines   = display.split("\n")
-      lines must have length 4
+      lines must have length 5
       lines.head mustBe "Player's Hand:"
       lines(2) mustBe "Deck:"
-      lines(1) mustBe oneOf("Empty", "B", "E")
-      lines(3) must contain only "X"
+      List(lines(1)) must contain oneOf ("Empty", "B", "E")
+      lines(3).toList must contain only 'X'
       lines(3).length mustBe turn.drawPile.length
     }
   }
