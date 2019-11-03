@@ -9,9 +9,9 @@ object Main extends IOApp {
   val blankCardNumber     = 16
 
   def run(args: List[String]): IO[ExitCode] = {
-    implicit val console = new LiveConsole[IO]()
-    implicit val random  = new ScalaRandom[IO]()
-    val program          = new Program[IO]()
+    implicit val console  = new LiveConsole[IO]()
+    implicit val shuffler = new RandomShuffler[IO]()
+    val program           = new Program[IO]()
     program.run(explosiveCardNumber, blankCardNumber).guaranteeCase(_ => IO.unit)
   }
 

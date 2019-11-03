@@ -33,7 +33,7 @@ class ModelsSpec extends FlatSpecLike with MustMatchers with ExplodingGen {
       lines must have length 5
       lines.head mustBe "Player's Hand:"
       lines(2) mustBe "Deck:"
-      List(lines(1)) must contain oneOf ("Empty", "B", "E")
+      List(lines(1))  must contain oneOf ("Empty", "B", "E")
       lines(3).toList must contain only 'X'
       lines(3).length mustBe turn.drawPile.length
     }

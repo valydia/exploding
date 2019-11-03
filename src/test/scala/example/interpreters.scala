@@ -6,13 +6,18 @@ import cats.mtl.MonadState
 import cats.syntax.flatMap._
 import cats.syntax.functor._
 
-case class TestEnv(inputs: List[String], outputs: List[String], nextInts: List[Int]) {
+case class TestEnv(
+  inputs: List[String],
+  outputs: List[String],
+  shufflers: List[((Int, Card), (Int, Card)) => List[Card]]
+) {
 
   def putStrLn(output: String): TestEnv = copy(outputs = output :: outputs)
 
   def getStrLn(): (TestEnv, String) = (copy(inputs = inputs.tail), inputs.head)
 
-  def nextInt(): (TestEnv, Int) = (copy(nextInts = nextInts.tail), nextInts.head)
+  def shuffle(x: (Int, Card), y: (Int, Card)): (TestEnv, List[Card]) =
+    (copy(shufflers = shufflers.tail), shufflers.head(x, y))
 
   def showLast: String = outputs.head
 
@@ -34,14 +39,14 @@ class TestConsole[M[_]: MonadState[?[_], TestEnv]] extends Console[M] {
     } yield input
 }
 
-class TestRandom[M[_]: MonadState[?[_], TestEnv]] extends Random[M] {
+class TestShuffle[M[_]: MonadState[?[_], TestEnv]] extends Shuffler[M] {
 
   def MS: MonadState[M, TestEnv] = implicitly
   implicit def M                 = MS.monad
 
-  override def nexInt(upper: Int): M[Int] =
+  override def shuffle(x: (Int, Card), y: (Int, Card)): M[List[Card]] =
     for {
-      tuple <- MS.inspect(_.nextInt())
+      tuple <- MS.inspect(_.shuffle(x, y))
       (st, input) = tuple
       _ <- MS.set(st)
     } yield input
@@ -61,13 +66,15 @@ object TestEnv {
       } yield input
   }
 
-  implicit val randomIO: Random[Test] = new Random[Test] {
-    override def nexInt(upper: Int): Test[Int] =
-      for {
-        tuple <- StateT.inspect[IO, TestEnv, (TestEnv, Int)](_.nextInt())
-        (st, input) = tuple
-        _ <- StateT.set[IO, TestEnv](st)
-      } yield input
+  implicit val shufflerIO: Shuffler[Test] = new Shuffler[Test] {
 
+    override def shuffle(x: (Int, Card), y: (Int, Card)): Test[List[Card]] = {
+      for {
+        tuple <- StateT.inspect[IO, TestEnv, (TestEnv, List[Card])](_.shuffle(x, y))
+        (st, list) = tuple
+        _ <- StateT.set[IO, TestEnv](st)
+      } yield list
+    }
   }
+
 }

@@ -7,8 +7,8 @@ trait Console[F[_]] {
   def getStrLn(): F[String]
 }
 
-trait Random[F[_]] {
+trait Shuffler[F[_]] {
 
-  def nexInt(upper: Int): F[Int]
+  def shuffle(x: (Int, Card), y: (Int, Card)): F[List[Card]]
 
 }
