@@ -19,11 +19,8 @@ class RandomShuffler[F[_]](implicit S: Sync[F]) extends Shuffler[F] {
   private def randomInt(upperInt: Int): F[Int] =
     S.delay(SRandom.nextInt(upperInt))
 
-  def shuffle(x: (Int, Card), y: (Int, Card)): F[List[Card]] = {
-    val (explosiveNum, exCard) = x
-    val (blankNum, exBlank)    = y
-    val explosive              = List.fill(explosiveNum)(exCard)
-    explosive.foldLeft(S.pure(List.fill(blankNum)(exBlank))) {
+  private def shuffle(cardList1: List[Card], cardList2: List[Card]): F[List[Card]] = {
+    cardList1.foldLeft(S.pure(cardList2)) {
       case (acc, elem) =>
         for {
           accList <- acc
@@ -31,4 +28,10 @@ class RandomShuffler[F[_]](implicit S: Sync[F]) extends Shuffler[F] {
         } yield accList.patch(idx, List(elem), 0)
     }
   }
+
+  def shuffle(cardList: List[Card]): F[List[Card]] = {
+    val (l1, l2) = cardList.splitAt(cardList.length / 2)
+    shuffle(l1, l2)
+  }
+
 }

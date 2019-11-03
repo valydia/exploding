@@ -9,15 +9,15 @@ import cats.syntax.functor._
 case class TestEnv(
   inputs: List[String],
   outputs: List[String],
-  shufflers: List[((Int, Card), (Int, Card)) => List[Card]]
+  shufflers: List[List[Card] => List[Card]]
 ) {
 
   def putStrLn(output: String): TestEnv = copy(outputs = output :: outputs)
 
   def getStrLn(): (TestEnv, String) = (copy(inputs = inputs.tail), inputs.head)
 
-  def shuffle(x: (Int, Card), y: (Int, Card)): (TestEnv, List[Card]) =
-    (copy(shufflers = shufflers.tail), shufflers.head(x, y))
+  def shuffle(cardList: List[Card]): (TestEnv, List[Card]) =
+    (copy(shufflers = shufflers.tail), shufflers.head(cardList))
 
   def showLast: String = outputs.head
 
@@ -44,9 +44,9 @@ class TestShuffle[M[_]: MonadState[?[_], TestEnv]] extends Shuffler[M] {
   def MS: MonadState[M, TestEnv] = implicitly
   implicit def M                 = MS.monad
 
-  override def shuffle(x: (Int, Card), y: (Int, Card)): M[List[Card]] =
+  override def shuffle(cardList: List[Card]): M[List[Card]] =
     for {
-      tuple <- MS.inspect(_.shuffle(x, y))
+      tuple <- MS.inspect(_.shuffle(cardList))
       (st, input) = tuple
       _ <- MS.set(st)
     } yield input
@@ -68,9 +68,9 @@ object TestEnv {
 
   implicit val shufflerIO: Shuffler[Test] = new Shuffler[Test] {
 
-    override def shuffle(x: (Int, Card), y: (Int, Card)): Test[List[Card]] = {
+    override def shuffle(cardList: List[Card]): Test[List[Card]] = {
       for {
-        tuple <- StateT.inspect[IO, TestEnv, (TestEnv, List[Card])](_.shuffle(x, y))
+        tuple <- StateT.inspect[IO, TestEnv, (TestEnv, List[Card])](_.shuffle(cardList))
         (st, list) = tuple
         _ <- StateT.set[IO, TestEnv](st)
       } yield list

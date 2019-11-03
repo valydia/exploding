@@ -37,10 +37,15 @@ class Program[F[_]](implicit S: Sync[F], C: Console[F], SH: Shuffler[F]) {
     } yield exitCode
   }
 
-  def run(explosiveNum: Int, blankNum: Int): F[ExitCode] =
+  def buildDeck(explosiveNum: Int, defuseNum: Int, blankNum: Int): List[Card] =
+    List.fill(explosiveNum)(Explosive) ++ List.fill(defuseNum)(Defuse) ++ List.fill(blankNum)(Blank)
+
+  def run(explosiveNum: Int, defuseNum: Int, blankNum: Int): F[ExitCode] = {
+    val deck = buildDeck(explosiveNum, defuseNum, blankNum)
     for {
-      initialDrawPile <- SH.shuffle((explosiveNum, Explosive), (blankNum, Blank))
+      initialDrawPile <- SH.shuffle(deck)
       exitCode        <- mainLoop(new Turn(initialDrawPile), p1)
     } yield exitCode
+  }
 
 }

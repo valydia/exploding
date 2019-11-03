@@ -9,6 +9,6 @@ trait Console[F[_]] {
 
 trait Shuffler[F[_]] {
 
-  def shuffle(x: (Int, Card), y: (Int, Card)): F[List[Card]]
+  def shuffle(cardList: List[Card]): F[List[Card]]
 
 }

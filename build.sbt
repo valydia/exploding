@@ -19,13 +19,13 @@ lazy val settings = commonSettings ++ coverageSettings
 lazy val coverageSettings = Seq(
   coverageFailOnMinimum := false,
   coverageExcludedFiles := ".*/target/.*",
-  coverageHighlighting := true
+  coverageHighlighting  := true
 )
 
 lazy val commonSettings =
   Seq(
-    scalaVersion := "2.12.8",
-    organization := "com.example",
+    scalaVersion     := "2.12.8",
+    organization     := "com.example",
     organizationName := "example",
     scalacOptions ++= Seq(
       "-unchecked",

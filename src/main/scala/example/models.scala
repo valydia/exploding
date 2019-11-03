@@ -4,6 +4,7 @@ case class Player(name: String, hand: Option[Card])
 
 sealed trait Card
 case object Explosive extends Card
+case object Defuse extends Card
 case object Blank extends Card
 
 sealed trait State

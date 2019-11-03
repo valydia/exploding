@@ -6,17 +6,17 @@ import org.scalacheck.Gen
 
 class ProgramSpec extends FlatSpecLike with MustMatchers with ExplodingGen {
 
-  def shufflerExplosiveLast(ex: (Int, Card), blank: (Int, Card)): List[Card] = {
-    val (exNum, exCard)       = ex
-    val (blankNum, blankCard) = blank
-    List.fill(blankNum)(blankCard) ++ List.fill(exNum)(exCard)
+  def shufflerExplosiveLast(cardList: List[Card]): List[Card] = {
+    val sortedCards = cardList.groupBy(identity)
+    sortedCards.getOrElse(Blank, Nil) ++ sortedCards.getOrElse(Defuse, Nil) ++ sortedCards
+      .getOrElse(Explosive, Nil)
   }
 
   "Program" should "run the program until the end if the user press enough times 'd' " in {
-    forAll(Gen.chooseNum(17, 100)) { inputNumber =>
+    forAll(Gen.chooseNum(20, 100)) { inputNumber =>
       val initialState = TestEnv(List.fill(inputNumber)("d"), List(), List(shufflerExplosiveLast))
       val finalState =
-        new Program[Test].run(1, 16).runS(initialState).unsafeRunSync()
+        new Program[Test].run(1, 3, 16).runS(initialState).unsafeRunSync()
 
       finalState.showLast must startWith("Game finished as Loser(Player1) ")
     }
@@ -28,7 +28,7 @@ class ProgramSpec extends FlatSpecLike with MustMatchers with ExplodingGen {
     val inputNumber  = 50000
     val initialState = TestEnv(List.fill(inputNumber)("d"), List(), List(shufflerExplosiveLast))
     val finalState =
-      new Program[Test].run(1, inputNumber - 1).runS(initialState).unsafeRunSync()
+      new Program[Test].run(1, 3, inputNumber - 4).runS(initialState).unsafeRunSync()
 
     finalState.showLast must startWith("Game finished as Loser(Player1) ")
   }
