@@ -6,7 +6,7 @@ object Main extends IOApp {
 
   // Should go to some conf file or could come from user
   val explosiveCardNumber = 1
-  val defuseNumber        = 3
+  val defuseNumber        = 2
   val blankCardNumber     = 16
 
   def run(args: List[String]): IO[ExitCode] = {

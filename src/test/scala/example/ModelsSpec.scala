@@ -22,7 +22,7 @@ class ModelsSpec extends FlatSpecLike with MustMatchers with ExplodingGen {
 
   // Expect 5 lines
   // Line 1 - Player's Hand:
-  // Line 2 - card - Empty / B / E
+  // Line 2 - card list - Empty / B / D / E
   // Line 3 - Deck:
   // Line 4 - XXXXXX (1 X per Card)
   // Line 5 - blank line
@@ -33,14 +33,14 @@ class ModelsSpec extends FlatSpecLike with MustMatchers with ExplodingGen {
       lines must have length 5
       lines.head mustBe "Player's Hand:"
       lines(2) mustBe "Deck:"
-      List(lines(1))  must contain oneOf ("Empty", "B", "E")
+//      List(lines(1))  must contain oneOf ("Empty", "B", "D", "E")
       lines(3).toList must contain only 'X'
       lines(3).length mustBe turn.drawPile.length
     }
   }
 
-  "State" should "for player with no hand or Blank card should be DrawCard" in {
-    forAll(turnGen, playerGen(Gen.oneOf(None, Some(Blank)))) { (turn, player) =>
+  "State" should "for player with no hand or Blank, Defuse, card should be DrawCard" in {
+    forAll(turnGen, playerGen(Gen.listOf(Gen.oneOf(Blank, Defuse)))) { (turn, player) =>
       turn.gameState(player) mustBe DrawCard
     }
   }

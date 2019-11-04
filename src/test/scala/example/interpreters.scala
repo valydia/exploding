@@ -14,7 +14,8 @@ case class TestEnv(
 
   def putStrLn(output: String): TestEnv = copy(outputs = output :: outputs)
 
-  def getStrLn(): (TestEnv, String) = (copy(inputs = inputs.tail), inputs.head)
+  def getStrLn(): (TestEnv, String) =
+    (copy(inputs = inputs.tail), inputs.head)
 
   def shuffle(cardList: List[Card]): (TestEnv, List[Card]) =
     (copy(shufflers = shufflers.tail), shufflers.head(cardList))

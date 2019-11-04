@@ -5,10 +5,11 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 trait ExplodingGen extends ScalaCheckDrivenPropertyChecks {
 
-  val cardGen: Gen[Card] = Gen.frequency((1, Explosive), (9, Blank))
-  val turnGen: Gen[Turn] = Gen.nonEmptyListOf(cardGen).map(Turn.apply)
+  val cardGen: Gen[Card]           = Gen.frequency((1, Explosive), (2, Defuse), (20, Blank))
+  val cardListGen: Gen[List[Card]] = Gen.nonEmptyListOf(cardGen)
+  val turnGen: Gen[Turn]           = Gen.nonEmptyListOf(cardGen).map(Turn.apply)
 
-  def playerGen(gen: Gen[Option[Card]] = cardGen.map(Option.apply)): Gen[Player] =
+  def playerGen(gen: Gen[List[Card]] = cardListGen): Gen[Player] =
     for {
       name <- Gen.alphaNumStr
       hand <- gen
